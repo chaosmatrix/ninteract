@@ -175,18 +175,20 @@ func splitCmdline(cmdline string) []string {
 		return []string{}
 	}
 	cmds := make([]string, 0)
-	_isMark := false
+	_quotas := [2]bool{false, false}
 	var _buf bytes.Buffer
 	for _, _rune := range cmdline {
 		switch _rune {
-		case '\'', '"':
-			_isMark = !_isMark
+		case '\'':
+			_quotas[0] = !_quotas[0]
+		case '"':
+			_quotas[1] = !_quotas[1]
 		case ' ':
-			if !_isMark {
+			if _quotas[0] || _quotas[1] {
+				_buf.WriteRune(_rune)
+			} else {
 				cmds = append(cmds, _buf.String())
 				_buf.Reset()
-			} else {
-				_buf.WriteRune(_rune)
 			}
 		default:
 			_buf.WriteRune(_rune)
