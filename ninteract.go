@@ -24,10 +24,10 @@ func init() {
 	flag.StringVar(&COMMAND.stdin, "stdin", "", "stdin input string")
 
 	// stdin rule
-	flag.StringVar(&COMMAND.stdinRule.startsWith, "stdinRule-startsWith", "", "when promote output startswith this message, write '--stdin' into stdin")
-	flag.StringVar(&COMMAND.stdinRule.endsWith, "stdinRule-endsWith", "", "when promote output endswith this message, write '--stdin' into stdin")
-	flag.StringVar(&COMMAND.stdinRule.contains, "stdinRule-contains", "", "when promote output contain this message, write '--stdin' into stdin")
-	flag.StringVar(&COMMAND.stdinRule.regex, "stdinRule-regex", "", "when promote output match by this regex, write '--stdin' into stdin")
+	flag.StringVar(&COMMAND.promptRule.startsWith, "prompt-startsWith", "", "when promote output startswith this message, write '--stdin' into stdin")
+	flag.StringVar(&COMMAND.promptRule.endsWith, "prompt-endsWith", "", "when promote output endswith this message, write '--stdin' into stdin")
+	flag.StringVar(&COMMAND.promptRule.contains, "prompt-contains", "", "when promote output contain this message, write '--stdin' into stdin")
+	flag.StringVar(&COMMAND.promptRule.regex, "prompt-matchRegex", "", "when promote output match by this regex, write '--stdin' into stdin")
 
 	//
 	flag.BoolVar(&COMMAND.verbose, "verbose", false, "verbose output")
@@ -40,9 +40,9 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	if COMMAND.stdinRule.regex != "" {
-		if _, _err := regexp.Compile(COMMAND.stdinRule.regex); _err != nil {
-			fmt.Fprintf(os.Stderr, "[ERROR] compile regex \"%s\" faile, Error: \"%v\"\n", COMMAND.stdinRule.regex, _err)
+	if COMMAND.promptRule.regex != "" {
+		if _, _err := regexp.Compile(COMMAND.promptRule.regex); _err != nil {
+			fmt.Fprintf(os.Stderr, "[ERROR] compile regex \"%s\" faile, Error: \"%v\"\n", COMMAND.promptRule.regex, _err)
 			os.Exit(1)
 		}
 	}
@@ -95,7 +95,7 @@ func ruleRegex(str string, rule string) bool {
 type Command struct {
 	command         string
 	timeoutDuration time.Duration
-	stdinRule       Rule
+	promptRule      Rule
 	stdin           string
 	stdout          bytes.Buffer
 	stderr          bytes.Buffer
@@ -141,9 +141,9 @@ func (cmd *Command) run() {
 				}
 				if _rf.Buffered() == 0 {
 					if cmd.verbose {
-						fmt.Fprintf(os.Stderr, "[DEBUG] [Promat] \"%s\"\n", _outBuff.String())
+						fmt.Fprintf(os.Stderr, "[DEBUG] [Prompt] \"%s\"\n", _outBuff.String())
 					}
-					if cmd.stdinRule.matchRule(_outBuff.String()) {
+					if cmd.promptRule.matchRule(_outBuff.String()) {
 						fd.WriteString(cmd.stdin + "\n")
 					}
 					break
