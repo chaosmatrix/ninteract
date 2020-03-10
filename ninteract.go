@@ -30,6 +30,9 @@ func init() {
 	flag.StringVar(&COMMAND.promptMatchRule.regex, "prompt-matchRegex", "", "when promote output match by this regex, write '--stdin' into stdin")
 
 	//
+	flag.BoolVar(&COMMAND.escapePrompt, "escape-prompt", true, "escape prompt")
+	flag.BoolVar(&COMMAND.escapeStdout, "escape-stdout", true, "escape stdout")
+	flag.BoolVar(&COMMAND.escapeStderr, "escape-stderr", true, "escape stderr")
 	flag.BoolVar(&COMMAND.verbose, "verbose", false, "verbose output")
 	flag.BoolVar(&COMMAND.quiet, "quiet", false, "ignore all stdout or stderr, nozero indicate command exec failed")
 }
@@ -48,11 +51,19 @@ func main() {
 	}
 	(&COMMAND).run()
 	if !COMMAND.quiet {
-		if _str := COMMAND.stdout.String(); len(_str) != 0 {
-			fmt.Fprintf(os.Stdout, "%s", COMMAND.stdout.String())
+		if _bs := COMMAND.stdout.Bytes(); len(_bs) != 0 {
+			if COMMAND.escapeStdout {
+				fmt.Fprintf(os.Stdout, "%q", COMMAND.stdout.Bytes())
+			} else {
+				fmt.Fprintf(os.Stdout, "%s", COMMAND.stdout.Bytes())
+			}
 		}
-		if _str := COMMAND.stderr.String(); len(_str) != 0 {
-			fmt.Fprintf(os.Stderr, "%s", COMMAND.stderr.String())
+		if _bs := COMMAND.stderr.Bytes(); len(_bs) != 0 {
+			if COMMAND.escapeStderr {
+				fmt.Fprintf(os.Stderr, "%q", COMMAND.stderr.Bytes())
+			} else {
+				fmt.Fprintf(os.Stderr, "%s", COMMAND.stderr.Bytes())
+			}
 		}
 	}
 	os.Exit(COMMAND.exitCode)
@@ -102,6 +113,9 @@ type Command struct {
 	exitCode        int
 	execSuccess     bool
 	errString       string
+	escapePrompt    bool
+	escapeStdout    bool
+	escapeStderr    bool
 	verbose         bool
 	quiet           bool
 }
@@ -141,7 +155,11 @@ func (cmd *Command) run() {
 				}
 				if _rf.Buffered() == 0 {
 					if cmd.verbose {
-						fmt.Fprintf(os.Stderr, "[DEBUG] [Prompt] \"%s\"\n", _outBuff.String())
+						if cmd.escapePrompt {
+							fmt.Fprintf(os.Stderr, "[DEBUG] [Prompt] '%q'\n", _outBuff.Bytes())
+						} else {
+							fmt.Fprintf(os.Stderr, "[DEBUG] [Prompt] '%s'\n", _outBuff.Bytes())
+						}
 					}
 					if cmd.promptMatchRule.matchRule(_outBuff.String()) {
 						fd.WriteString(cmd.stdin + "\n")
