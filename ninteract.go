@@ -30,9 +30,9 @@ func init() {
 	flag.StringVar(&COMMAND.promptMatchRule.regex, "prompt-matchRegex", "", "when promote output match by this regex, write '--stdin' into stdin")
 
 	//
-	flag.BoolVar(&COMMAND.escapePrompt, "escape-prompt", true, "escape prompt")
-	flag.BoolVar(&COMMAND.escapeStdout, "escape-stdout", true, "escape stdout")
-	flag.BoolVar(&COMMAND.escapeStderr, "escape-stderr", true, "escape stderr")
+	flag.BoolVar(&COMMAND.escapePrompt, "escape-prompt", false, "escape prompt")
+	flag.BoolVar(&COMMAND.escapeStdout, "escape-stdout", false, "escape stdout")
+	flag.BoolVar(&COMMAND.escapeStderr, "escape-stderr", false, "escape stderr")
 	flag.BoolVar(&COMMAND.verbose, "verbose", false, "verbose output")
 	flag.BoolVar(&COMMAND.quiet, "quiet", false, "ignore all stdout or stderr, nozero indicate command exec failed")
 }
